@@ -66,6 +66,10 @@ func (c *Checker) Allow(kind TokenKind) bool {
 }
 
 func (c *Checker) Current() TokenKind {
+	if c.currToken.kind == Comment {
+		c.Next()
+		return c.Current()
+	}
 	return c.currToken.kind
 }
 

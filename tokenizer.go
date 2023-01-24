@@ -151,6 +151,16 @@ func (t *Tokenizer) Token() (token Token, err error) {
 				break
 			}
 		}
+	case currRune == '/':
+		if t.r == '/' {
+			token.kind = Comment
+			for t.offset < len(t.data) {
+				if t.r == '\n' {
+					break
+				}
+				t.Next()
+			}
+		}
 	case currRune == '(':
 		token.kind = LeftParen
 	case currRune == ')':
@@ -199,6 +209,7 @@ func (t *Tokenizer) Token() (token Token, err error) {
 var (
 	Invalid = TokenKind{"invalid"}
 	EOF     = TokenKind{"EOF"}
+	Comment = TokenKind{"comment"}
 
 	Identifier = TokenKind{"identifier"}
 	String     = TokenKind{"string"}
