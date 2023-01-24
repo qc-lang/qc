@@ -1,4 +1,4 @@
-# QcLang
+# Qc
 
 C transpiler prototype written in go!
 don't expect it to be working well, it's very much incomplete and is missing a lot of stuff, but feel free to contribute.
@@ -13,9 +13,8 @@ the tokenizer and parser were mostly inspired by [Blaise](https://github.com/gin
 ```go
 package main
 
-// The foreign keyword is used before an import to specify that the import contains C code
-foreign import "stdio.h"
-foreign import "stdlib.h"
+// The import keyword is used to import libraries
+import "fmt"
 
 // The def keyword is used to define a new type
 def Foo string
@@ -32,9 +31,7 @@ def BarFoo struct {
     Foo: FooBar
 }
 
-func main(argv: string) {
-  foreign use "C" {
-      printf("Hello World!")
-  }
+func main() {
+  fmt.printf("Hello, World!\n")
 }
 ```
