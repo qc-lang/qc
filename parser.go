@@ -126,10 +126,10 @@ func (c *Checker) ImportDecl() {
 			switch c2 := ch.Current(); c2 {
 			case Foreign:
 				ch.ForeignDecl()
-			case Func:
+			case Fn:
 				ch.FunctionDecl()
-			case Def:
-				ch.DefDecl()
+			case TypeDef:
+				ch.TypeDefDecl()
 			case Import:
 				ch.ImportDecl()
 			default:
@@ -160,8 +160,9 @@ func (c *Checker) FunctionCall(pkg *_Package) string {
 		return fmt.Sprintf("%s(%s)", fname, strings.Join(args, ","))
 	}
 
+	n := c.Next().text
 	for _, f := range pkg.builder.functions {
-		if c.Next().text == f.name {
+		if n == f.name {
 			fname = f.name
 			c.Expect(LeftParen)
 			for range f.args {
@@ -179,7 +180,7 @@ func (c *Checker) FunctionCall(pkg *_Package) string {
 }
 
 func (c *Checker) FunctionDecl() {
-	c.Expect(Func)
+	c.Expect(Fn)
 	name := c.Expect(Identifier).text
 	c.Expect(LeftParen)
 	var args []_Argument
@@ -220,8 +221,8 @@ func (c *Checker) FunctionDecl() {
 	c.Next()
 }
 
-func (c *Checker) DefDecl() {
-	c.Expect(Def)
+func (c *Checker) TypeDefDecl() {
+	c.Expect(TypeDef)
 	name := c.Expect(Identifier).text
 	typ := c.Type(c.Next())
 	if t, ok := typ.(SimpleType); ok {
@@ -269,7 +270,6 @@ func (c *Checker) Type(kind Token) Type {
 
 func (c *Checker) Argument() _Argument {
 	name := c.Expect(Identifier)
-	c.Expect(Colon)
 	kind := c.Expect(Identifier)
 	typ := c.Type(kind)
 	arg := _Argument{
@@ -303,10 +303,10 @@ decls:
 		switch c2 := c.Current(); c2 {
 		case Foreign:
 			c.ForeignDecl()
-		case Func:
+		case Fn:
 			c.FunctionDecl()
-		case Def:
-			c.DefDecl()
+		case TypeDef:
+			c.TypeDefDecl()
 		case Import:
 			c.ImportDecl()
 		default:
@@ -317,7 +317,7 @@ decls:
 	c.Expect(EOF)
 
 	data := []byte(c.writeC())
-	err = os.WriteFile("_out.c", data, 0644)
+	err = os.WriteFile("debug/_out.c", data, 0644)
 }
 
 func (c *Checker) writeC() string {

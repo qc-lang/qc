@@ -17,21 +17,21 @@ package main
 import "fmt"
 
 // The def keyword is used to define a new type
-def Foo string
-def Bar int
+type Foo string
+type Bar int
 
 // structs...
-def FooBar struct {
+type FooBar struct {
  // name type
-    Foo: string
-    Bar: int
+    Foo string
+    Bar int
 }
 
-def BarFoo struct {
-    Foo: FooBar
+type BarFoo struct {
+    Foo FooBar
 }
 
-func main() {
-  fmt.printf("Hello, World!\n")
+fn main() {
+  fmt.println("Hello, World!")
 }
 ```

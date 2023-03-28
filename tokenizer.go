@@ -141,8 +141,8 @@ func (t *Tokenizer) Token() (token Token, err error) {
 		for _, v := range []TokenKind{
 			Foreign,
 			Import,
-			Func,
-			Def,
+			Fn,
+			TypeDef,
 			Package,
 			Use,
 		} {
@@ -217,10 +217,10 @@ var (
 	// Keywords
 	Package = TokenKind{"package"}
 	Foreign = TokenKind{"foreign"}
-	Def     = TokenKind{"def"}
+	TypeDef = TokenKind{"type"}
 	Import  = TokenKind{"import"}
 	Use     = TokenKind{"use"}
-	Func    = TokenKind{"func"}
+	Fn      = TokenKind{"fn"}
 	Struct  = TokenKind{"struct"}
 
 	// Separators

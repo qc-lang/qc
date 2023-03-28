@@ -24,28 +24,35 @@ func main() {
 	switch arg := args[0]; arg {
 	case "build":
 		Parse(args[1])
-		gcc("_out.c", stderr)
-		cmd("rm -f _out.c")
+		gcc("debug/_out.c", stderr)
+		//cmd("del -f ./debug/_out.c")
 	case "run":
 		Parse(args[1])
-		gcc("_out.c", stderr)
-		cmd("./a.out")
-		cmd("rm -f _out.c")
-		cmd("rm -f ./a.out")
+		gcc("debug/_out.c", stderr)
+		run("./debug/a.exe")
+		//cmd("del -f debug/_out.c")
+		//cmd("del -f debug/a.exe")
 	case "translate":
 		Parse(args[1])
 	}
 }
 
 func gcc(file string, stderr io.Writer) {
-	cmd := exec.Command("gcc", file)
+	cmd := exec.Command("gcc", file, "-o", "debug/a.exe")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = stderr
 	cmd.Run()
 }
 
 func cmd(args string) {
-	cmd := exec.Command("/bin/sh", []string{"-c", args}...)
+	cmd := exec.Command("cmd", []string{"/C", args}...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
+}
+
+func run(file string) {
+	cmd := exec.Command(file)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()

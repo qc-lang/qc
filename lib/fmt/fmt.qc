@@ -2,6 +2,10 @@ package fmt
 
 foreign import "stdio.h"
 
-func printf(s: string) {
+fn println(s string) {
+    C.puts(s)
+}
+
+fn printf(s string) {
     C.printf(s)
 }
