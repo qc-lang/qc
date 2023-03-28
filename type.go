@@ -5,90 +5,85 @@ import (
 	"strings"
 )
 
-var types = map[string]Type{
-	"struct": _Struct{},
-	"string": SimpleType{c: "char*"},
-	"int":    SimpleType{c: "int"},
-}
-
-type SimpleType struct {
-	name string
-	c    string
-}
-
-func (s SimpleType) C(pkg string) string {
-	return s.c
-}
-
-func (s SimpleType) Def(pkg string) string {
-	return fmt.Sprintf("typedef %s %s_%s;", s.c, pkg, s.name)
-}
-
 type Type interface {
-	C(pkg string) string
-	Def(pkg string) string
+	Generator
 }
 
-// Argument ...
-type _Argument struct {
-	name string
-	typ  Type
+var types = map[string]Type{
+	"struct": Structure{},
+	"string": Alias{cname: "char*"},
+	"int":    Alias{cname: "int"},
 }
 
-func (f _Argument) C(pkg string) string {
-	return fmt.Sprintf("%s %s", f.typ.C(pkg), f.name)
+type Alias struct {
+	alias string
+	cname string
 }
 
-func (f _Argument) Def(pkg string) string {
-	return fmt.Sprintf("%s %s_%s", f.typ.C(pkg), pkg, f.name)
+func (a Alias) Definition(_ string) string {
+	def := &strings.Builder{}
+	def.WriteString("typedef")
+	def.WriteString(" ")
+	def.WriteString(a.cname)
+	def.WriteString(" ")
+	def.WriteString(a.alias)
+	def.WriteString(";")
+	return def.String()
 }
 
-// Struct ...
-type _Struct struct {
-	name   string
-	fields []_Argument
+func (a Alias) Declaration(_ string) string {
+	decl := &strings.Builder{}
+	decl.WriteString(a.alias)
+	return decl.String()
 }
 
-func (s _Struct) C(pkg string) string {
-	return fmt.Sprintf("struct %s_%s", pkg, s.name)
+type Arg struct {
+	label string
+	typ   Type
 }
 
-func (s _Struct) Def(pkg string) string {
-	var fields []string
-	for _, field := range s.fields {
-		fields = append(fields, field.C(pkg)+";")
+func (a Arg) Format(pkg, sep string) string {
+	decl := a.typ.Declaration(pkg)
+	if al, ok := a.typ.(Alias); ok {
+		pkg = ""
+		if len(decl) == 0 {
+			decl = al.cname
+		}
 	}
-	return fmt.Sprintf("typedef struct %s_%s {%s};", pkg, s.name, strings.Join(fields, ""))
+	return fmt.Sprintf("%s %s%s", decl, a.label, sep)
 }
 
-// Function ...
-type _Function struct {
-	name    string
-	returns Type
-	args    []_Argument
-	body    []string
+type Structure struct {
+	label  string
+	fields []Arg
 }
 
-func (f _Function) C(pkg string) string {
-	return fmt.Sprintf("%s %s_%s();", f.returns.C(pkg), pkg, f.name)
+func (s Structure) Definition(pkg string) string {
+	def := &strings.Builder{}
+	def.WriteString("typedef")
+	def.WriteString(" ")
+	def.WriteString("struct")
+	def.WriteString(" ")
+	label := s.label
+	if len(pkg) > 0 {
+		label = pkg + "_" + label
+	}
+	def.WriteString(label)
+	def.WriteString("{")
+	for _, f := range s.fields {
+		def.WriteString(f.Format(pkg, ";"))
+	}
+	def.WriteString("}")
+	def.WriteString(label)
+	def.WriteString(";")
+	return def.String()
 }
 
-func (f _Function) Def(pkg string) string {
-	if f.returns == nil {
-		f.returns = SimpleType{"void", "void"}
+func (s Structure) Declaration(pkg string) string {
+	decl := &strings.Builder{}
+	if len(pkg) > 0 {
+		decl.WriteString(pkg + "_")
 	}
-	var args []string
-	for _, arg := range f.args {
-		args = append(args, arg.C(pkg))
-	}
-	mPkg := pkg + "_"
-	if f.name == "main" {
-		mPkg = ""
-	}
-	var body []string
-	for _, line := range f.body {
-		body = append(body, line+";")
-	}
-
-	return fmt.Sprintf("%s %s%s(%s) {%s}", f.returns.C(pkg), mPkg, f.name, strings.Join(args, ", "), strings.Join(body, ""))
+	decl.WriteString(s.label)
+	return decl.String()
 }
