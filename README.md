@@ -4,7 +4,7 @@ C transpiler prototype written in go!
 don't expect it to be working well, it's very much incomplete and is missing a lot of stuff, but feel free to contribute.
 
 # Discord
-https://discord.gg/7SjjYNA2Xb
+https://discord.com/invite/J8PHyb6d
 
 # Note
 the tokenizer and parser were mostly inspired by [Blaise](https://github.com/gingerBill/blaise) by the creator of the [odin language](https://odin-lang.org)
